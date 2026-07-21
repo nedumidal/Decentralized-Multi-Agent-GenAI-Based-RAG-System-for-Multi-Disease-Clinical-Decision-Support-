@@ -1,0 +1,20 @@
+# Virtual Environment
+marc_env/
+venv/
+env/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Environment variables
+.env
+
+# VS Code
+.vscode/
+
+# Cursor
+.cursor/
+
+# Jupyter
+.ipynb_checkpoints/
