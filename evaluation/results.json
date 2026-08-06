@@ -1,0 +1,51 @@
+[
+  {
+    "test_case_id": "case_001_HFrEF_CKD_DM",
+    "timestamp": "2026-07-28T14:38:33.634107",
+    "MARC_results": {
+      "metric_1_accuracy": 0.75,
+      "metric_2_deduplication_rate": 0.0,
+      "metric_3_knowledge_transfer": 0.667,
+      "metric_4_conflict_f1": 1.0,
+      "metric_5_convergence_efficiency": 1.0,
+      "metric_6_faithfulness": 0.916,
+      "per_agent_accuracy": {
+        "Cardiology Agent": 0.8,
+        "Nephrology Agent": 0.75,
+        "Diabetology Agent": 0.75,
+        "Pharmacology Agent": 0.7
+      },
+      "per_agent_faithfulness": {
+        "Cardiology Agent": 1.0,
+        "Nephrology Agent": 0.833,
+        "Diabetology Agent": 0.833,
+        "Pharmacology Agent": 1.0
+      },
+      "conflict_details": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "conflicts_detected": 2,
+        "conflicts_resolved": 2
+      },
+      "convergence_details": {
+        "consensus_reached": true,
+        "convergence_round": 1,
+        "max_rounds": 5,
+        "efficiency_score": 1.0
+      }
+    },
+    "baseline_single_agent": {
+      "accuracy": 0.488,
+      "faithfulness": 0.641,
+      "deduplication_rate": 0.0,
+      "knowledge_transfers": 0,
+      "conflicts_detected": 0,
+      "convergence_rounds": "N/A (centralized)"
+    },
+    "improvement": {
+      "accuracy_gain": 0.262,
+      "faithfulness_gain": 0.275
+    }
+  }
+]

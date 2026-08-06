@@ -9,6 +9,7 @@ from marc_framework.sral import SRAL
 from marc_framework.iakb import IAKB
 from marc_framework.scdp import SCDP
 from marc_framework.dcwo import DCWO
+from evaluation.metrics import MARCEvaluator
 
 load_dotenv()
 
@@ -29,11 +30,14 @@ sral = SRAL()
 iakb = IAKB()
 scdp = SCDP()
 dcwo = DCWO(convergence_threshold=0.85, max_rounds=5)
+evaluator = MARCEvaluator()
+
 
 print("[MARC] SRAL initialized — Shared Retrieval Awareness Layer active")
 print("[MARC] IAKB initialized — Inter-Agent Knowledge Bus active")
 print("[MARC] SCDP initialized — Conflict Detection Protocol active")
 print("[MARC] DCWO initialized — Decentralized Consensus active")
+print("[MARC] Evaluator initialized — metrics tracking active")
 
 # Subscribe agents to relevant finding types
 iakb.subscribe("Cardiology Agent",
@@ -214,6 +218,19 @@ print("="*60)
 
 final_consensus = dcwo.run_consensus(results, conflicts)
 dcwo.print_report()
+# ============================================================
+# EVALUATION — All 6 Metrics
+# ============================================================
+evaluation = evaluator.run_full_evaluation(
+    results=results,
+    sral_report=sral.get_report(),
+    iakb_report=iakb.get_transfer_latency_report(),
+    scdp_report=scdp_test.get_conflict_f1_report(),
+    dcwo_report=dcwo.get_convergence_report(),
+    test_case_id="case_001_HFrEF_CKD_DM"
+)
+evaluator.print_evaluation_report(evaluation)
+evaluator.save_results()
 
 # ============================================================
 # FINAL SUMMARY
