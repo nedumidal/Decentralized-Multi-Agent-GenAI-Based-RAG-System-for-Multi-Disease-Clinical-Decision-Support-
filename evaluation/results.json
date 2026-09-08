@@ -1,24 +1,24 @@
 [
   {
-    "test_case_id": "case_001_HFrEF_CKD_DM",
-    "timestamp": "2026-07-28T14:38:33.634107",
+    "test_case_id": "case_001_HFrEF_CKD_DM_BioBERT",
+    "timestamp": "2026-08-31T13:50:11.436006",
     "MARC_results": {
-      "metric_1_accuracy": 0.75,
-      "metric_2_deduplication_rate": 0.0,
-      "metric_3_knowledge_transfer": 0.667,
+      "metric_1_accuracy": 0.875,
+      "metric_2_deduplication_rate": 33.33,
+      "metric_3_knowledge_transfer": 0.5,
       "metric_4_conflict_f1": 1.0,
       "metric_5_convergence_efficiency": 1.0,
-      "metric_6_faithfulness": 0.916,
+      "metric_6_faithfulness": 1.0,
       "per_agent_accuracy": {
-        "Cardiology Agent": 0.8,
-        "Nephrology Agent": 0.75,
-        "Diabetology Agent": 0.75,
-        "Pharmacology Agent": 0.7
+        "Cardiology Agent": 0.9,
+        "Nephrology Agent": 0.9,
+        "Diabetology Agent": 0.7,
+        "Pharmacology Agent": 1.0
       },
       "per_agent_faithfulness": {
         "Cardiology Agent": 1.0,
-        "Nephrology Agent": 0.833,
-        "Diabetology Agent": 0.833,
+        "Nephrology Agent": 1.0,
+        "Diabetology Agent": 1.0,
         "Pharmacology Agent": 1.0
       },
       "conflict_details": {
@@ -36,16 +36,16 @@
       }
     },
     "baseline_single_agent": {
-      "accuracy": 0.488,
-      "faithfulness": 0.641,
+      "accuracy": 0.569,
+      "faithfulness": 0.7,
       "deduplication_rate": 0.0,
       "knowledge_transfers": 0,
       "conflicts_detected": 0,
       "convergence_rounds": "N/A (centralized)"
     },
     "improvement": {
-      "accuracy_gain": 0.262,
-      "faithfulness_gain": 0.275
+      "accuracy_gain": 0.306,
+      "faithfulness_gain": 0.3
     }
   }
 ]

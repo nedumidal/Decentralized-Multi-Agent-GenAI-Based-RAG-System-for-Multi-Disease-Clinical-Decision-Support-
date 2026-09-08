@@ -1,4 +1,6 @@
 import os
+import re
+import requests
 from dotenv import load_dotenv
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -10,20 +12,44 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 
 load_dotenv()
-
 _embeddings = None
 
 def get_embeddings():
     global _embeddings
     if _embeddings is None:
-        print("Loading embedding model (one time only)...")
+        print("Loading BioBERT embedding model (one time only)...")
         _embeddings = HuggingFaceEmbeddings(
-            model_name="all-MiniLM-L6-v2",
+            model_name="pritamdeka/BioBERT-mnli-snli-scinli-scitail-mednli-stsb",
             model_kwargs={"device": "cpu"},
             encode_kwargs={"normalize_embeddings": True}
         )
-        print("Embedding model loaded.")
+        print("BioBERT embedding model loaded.")
     return _embeddings
+
+
+def fetch_pubmed_evidence(query: str, max_results: int = 3) -> str:
+    """Live PubMed search — base paper's Evidence-Based Scanner technique.
+    No API key needed — uses free NCBI E-utilities."""
+    try:
+        search_url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
+        resp = requests.get(search_url, params={
+            "db": "pubmed", "term": query, "retmax": max_results,
+            "retmode": "json", "sort": "relevance",
+            "datetype": "pdat", "mindate": "2022", "maxdate": "2025"
+        }, timeout=8)
+        pmids = resp.json().get("esearchresult", {}).get("idlist", [])
+        if not pmids:
+            return ""
+        fetch_resp = requests.get(
+            "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi",
+            params={"db": "pubmed", "id": ",".join(pmids[:max_results]),
+                    "rettype": "abstract", "retmode": "text"}, timeout=10)
+        text = fetch_resp.text.strip()
+        if len(text) > 1500:
+            text = text[:1500] + "..."
+        return f"\n[PubMed Evidence ({len(pmids)} articles)]:\n{text}\n"
+    except Exception:
+        return ""
 
 
 class PharmacologyAgent:
@@ -36,38 +62,36 @@ class PharmacologyAgent:
 
     def _build_knowledge_base(self, pdf_path: str):
         print(f"[{self.name}] Loading knowledge base...")
-        faiss_path = f"vectorstores/{self.specialty}"
+        faiss_path = f"vectorstores_biobert/{self.specialty}"
         embeddings = get_embeddings()
-
         if os.path.exists(faiss_path):
-            print(f"[{self.name}] Loading saved vectorstore from disk...")
-            vectorstore = FAISS.load_local(
-                faiss_path, embeddings,
-                allow_dangerous_deserialization=True
-            )
+            print(f"[{self.name}] Loading saved BioBERT vectorstore from disk...")
+            vectorstore = FAISS.load_local(faiss_path, embeddings,
+                                           allow_dangerous_deserialization=True)
             print(f"[{self.name}] Vectorstore loaded instantly.")
         else:
-            print(f"[{self.name}] Building vectorstore from PDF...")
+            print(f"[{self.name}] Building BioBERT vectorstore from PDF...")
             loader = PyPDFLoader(pdf_path)
             documents = loader.load()
-            splitter = RecursiveCharacterTextSplitter(
-                chunk_size=500,
-                chunk_overlap=100
-            )
+            splitter = RecursiveCharacterTextSplitter(chunk_size=512, chunk_overlap=64)
             chunks = splitter.split_documents(documents)
             print(f"[{self.name}] Split into {len(chunks)} chunks.")
             vectorstore = FAISS.from_documents(chunks, embeddings)
             os.makedirs(faiss_path, exist_ok=True)
             vectorstore.save_local(faiss_path)
-            print(f"[{self.name}] Vectorstore saved to disk.")
+            print(f"[{self.name}] BioBERT vectorstore saved to disk.")
 
         self.retriever = vectorstore.as_retriever(search_kwargs={"k": 6})
         print(f"[{self.name}] Knowledge base ready.")
 
+        # Switched to gemini-3.6-flash — gemini-3.7-flash is still rollout-capacity-
+        # constrained (503 "high demand" + hard ~20-23 req/day ceiling observed in
+        # Cloud Console dashboard despite active billing). 3.6-flash has been GA since
+        # July 21, 2026 and has had time to reach standard Tier 1 throughput.
         llm = ChatGoogleGenerativeAI(
-            model="gemini-3.5-flash",
+            model="gemini-3.6-flash",
             google_api_key=os.getenv("GOOGLE_API_KEY"),
-            temperature=0.1
+            timeout=90
         )
 
         prompt = PromptTemplate.from_template("""You are a specialist Pharmacologist AI agent.
@@ -75,48 +99,95 @@ Analyze this clinical case using WHO Essential Medicines guidelines context prov
 Extract ALL relevant drug recommendations, dosing, contraindications and interactions.
 Cite specific sections and page numbers.
 Focus on: drug interactions between heart failure medications and diabetes medications,
-dosing adjustments for reduced kidney function (eGFR 42), contraindicated drugs,
+dosing adjustments for reduced kidney function, contraindicated drugs,
 safe medication combinations, monitoring requirements.
 Even if context is partial, extract what is available.
+For USMLE-style questions, identify the single best answer option (A/B/C/D) explicitly.
 
 Context: {context}
 
 Clinical Case: {question}
 
-Pharmacology Analysis (with citations):""")
+Pharmacology Analysis (with citations):
+End your response with a line in EXACTLY this format (no extra text on that line):
+CONFIDENCE: 0.XX
+Where 0.XX is your calibrated confidence (0.0-1.0) based on how well the retrieved context matches the case.
+Use LOW confidence (0.1-0.4) if context is off-topic or insufficient.
+Use HIGH confidence (0.8-0.95) only when guidelines directly support your answer.""")
 
         self.chain = (
             {"context": self.retriever, "question": RunnablePassthrough()}
-            | prompt
-            | llm
-            | StrOutputParser()
+            | prompt | llm | StrOutputParser()
         )
+
+    def _get_pubmed_query(self, clinical_case: str) -> str:
+        case_lower = clinical_case.lower()
+        if "interaction" in case_lower or "contraindic" in case_lower:
+            return "drug interaction contraindication heart failure diabetes kidney"
+        if "dose" in case_lower or "dosing" in case_lower:
+            return "renal dose adjustment medication eGFR impairment"
+        if "nsaid" in case_lower or "ibuprofen" in case_lower:
+            return "NSAID contraindication heart failure kidney injury"
+        if "metformin" in case_lower:
+            return "metformin renal clearance contrast CKD dosing"
+        if "furosemide" in case_lower or "diuretic" in case_lower:
+            return "loop diuretic furosemide dosing heart failure"
+        return "drug therapy medication dosing renal impairment guidelines"
 
     def _get_focused_query(self) -> str:
         return "heart failure diabetes kidney disease drug interactions medications dosing adjustment renal impairment contraindications diuretics ACE inhibitor"
 
+    def _get_query_for_case(self, clinical_case: str) -> str:
+        case_lower = clinical_case.lower()
+        terms = []
+        if "interaction" in case_lower or "contraindic" in case_lower:
+            terms.append("drug interaction contraindication heart failure diabetes kidney")
+        if "dose" in case_lower or "dosing" in case_lower or "dose adjustment" in case_lower:
+            terms.append("dose adjustment renal impairment eGFR kidney failure")
+        if "nsaid" in case_lower or "ibuprofen" in case_lower:
+            terms.append("NSAID contraindication heart failure kidney worsening")
+        if "metformin" in case_lower:
+            terms.append("metformin renal clearance dose hold contrast CKD")
+        if "furosemide" in case_lower or "diuretic" in case_lower:
+            terms.append("loop diuretic furosemide heart failure kidney dose")
+        if "ace" in case_lower or "acei" in case_lower:
+            terms.append("ACE inhibitor renal dosing hyperkalemia monitoring")
+        if "beta" in case_lower or "bisoprolol" in case_lower or "carvedilol" in case_lower:
+            terms.append("beta blocker heart failure dosing pharmacology")
+        if terms:
+            return " ".join(terms)
+        return self._get_focused_query()
+
     def analyze(self, clinical_case: str) -> dict:
         print(f"[{self.name}] Analyzing case...")
-        focused_query = self._get_focused_query()
-        retrieved_docs = self.retriever.invoke(focused_query)
-        answer = self.chain.invoke(clinical_case)
-
+        retrieval_query = self._get_query_for_case(clinical_case)
+        retrieved_docs = self.retriever.invoke(retrieval_query)
+        web_evidence = fetch_pubmed_evidence(self._get_pubmed_query(clinical_case))
+        if web_evidence:
+            print(f"[{self.name}] PubMed evidence fetched ✓")
+        augmented_case = clinical_case + web_evidence
+        answer = self.chain.invoke(augmented_case)
         return {
             "agent": self.name,
             "specialty": self.specialty,
             "analysis": answer,
+            "web_evidence_used": bool(web_evidence),
             "retrieved_docs": [
-                {
-                    "doc_id": doc.metadata.get("page", "unknown"),
-                    "source": doc.metadata.get("source", "unknown"),
-                    "content_preview": doc.page_content[:150]
-                }
+                {"doc_id": doc.metadata.get("page", "unknown"),
+                 "source": doc.metadata.get("source", "unknown"),
+                 "content_preview": doc.page_content[:150]}
                 for doc in retrieved_docs
             ],
             "confidence": self._estimate_confidence(answer)
         }
 
     def _estimate_confidence(self, answer: str) -> float:
+        match = re.search(r"CONFIDENCE:\s*([01](?:\.\d+)?)", answer, re.IGNORECASE)
+        if match:
+            try:
+                return max(0.0, min(1.0, float(match.group(1))))
+            except ValueError:
+                pass
         if "Not found" in answer and len(answer) < 100:
             return 0.2
         elif "recommend" in answer.lower() or "guideline" in answer.lower():

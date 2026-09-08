@@ -1,0 +1,467 @@
+{
+  "benchmark": "PubMedQA",
+  "embeddings": "BioBERT",
+  "question_source": "real_pubmedqa_huggingface",
+  "scoring_method": "exact_match_yes_no_maybe (NOT cosine similarity like base paper)",
+  "comparable_to_base_paper": true,
+  "num_questions": 50,
+  "marc_accuracy": 86.0,
+  "marc_correct": 43,
+  "baseline_accuracy": 88.0,
+  "baseline_correct": 44,
+  "improvement": -2.0,
+  "base_paper_target": 88.0,
+  "beat_base_paper": false,
+  "detailed_results": [
+    {
+      "question_id": 1,
+      "question": "Do mitochondria play a role in remodelling lace plant leaves during programmed cell death?",
+      "correct": "yes",
+      "marc_answer": "yes",
+      "marc_correct": true,
+      "baseline_answer": "yes",
+      "baseline_correct": true
+    },
+    {
+      "question_id": 2,
+      "question": "Landolt C and snellen e acuity: differences in strabismus amblyopia?",
+      "correct": "no",
+      "marc_answer": "no",
+      "marc_correct": true,
+      "baseline_answer": "no",
+      "baseline_correct": true
+    },
+    {
+      "question_id": 3,
+      "question": "Syncope during bathing in infants, a pediatric form of water-induced urticaria?",
+      "correct": "yes",
+      "marc_answer": "yes",
+      "marc_correct": true,
+      "baseline_answer": "yes",
+      "baseline_correct": true
+    },
+    {
+      "question_id": 4,
+      "question": "Are the long-term results of the transanal pull-through equal to those of the transabdominal pull-th",
+      "correct": "no",
+      "marc_answer": "yes",
+      "marc_correct": false,
+      "baseline_answer": "maybe",
+      "baseline_correct": false
+    },
+    {
+      "question_id": 5,
+      "question": "Can tailored interventions increase mammography use among HMO women?",
+      "correct": "yes",
+      "marc_answer": "yes",
+      "marc_correct": true,
+      "baseline_answer": "yes",
+      "baseline_correct": true
+    },
+    {
+      "question_id": 6,
+      "question": "Double balloon enteroscopy: is it efficacious and safe in a community setting?",
+      "correct": "yes",
+      "marc_answer": "yes",
+      "marc_correct": true,
+      "baseline_answer": "yes",
+      "baseline_correct": true
+    },
+    {
+      "question_id": 7,
+      "question": "30-Day and 1-year mortality in emergency general surgery laparotomies: an area of concern and need f",
+      "correct": "maybe",
+      "marc_answer": "yes",
+      "marc_correct": false,
+      "baseline_answer": "yes",
+      "baseline_correct": false
+    },
+    {
+      "question_id": 8,
+      "question": "Is adjustment for reporting heterogeneity necessary in sleep disorders?",
+      "correct": "no",
+      "marc_answer": "no",
+      "marc_correct": true,
+      "baseline_answer": "yes",
+      "baseline_correct": false
+    },
+    {
+      "question_id": 9,
+      "question": "Do mutations causing low HDL-C promote increased carotid intima-media thickness?",
+      "correct": "no",
+      "marc_answer": "no",
+      "marc_correct": true,
+      "baseline_answer": "no",
+      "baseline_correct": true
+    },
+    {
+      "question_id": 10,
+      "question": "A short stay or 23-hour ward in a general and academic children's hospital: are they effective?",
+      "correct": "yes",
+      "marc_answer": "yes",
+      "marc_correct": true,
+      "baseline_answer": "yes",
+      "baseline_correct": true
+    },
+    {
+      "question_id": 11,
+      "question": "Did Chile's traffic law reform push police enforcement?",
+      "correct": "yes",
+      "marc_answer": "yes",
+      "marc_correct": true,
+      "baseline_answer": "yes",
+      "baseline_correct": true
+    },
+    {
+      "question_id": 12,
+      "question": "Therapeutic anticoagulation in the trauma patient: is it safe?",
+      "correct": "no",
+      "marc_answer": "no",
+      "marc_correct": true,
+      "baseline_answer": "no",
+      "baseline_correct": true
+    },
+    {
+      "question_id": 13,
+      "question": "Differentiation of nonalcoholic from alcoholic steatohepatitis: are routine laboratory markers usefu",
+      "correct": "yes",
+      "marc_answer": "yes",
+      "marc_correct": true,
+      "baseline_answer": "yes",
+      "baseline_correct": true
+    },
+    {
+      "question_id": 14,
+      "question": "Prompting Primary Care Providers about Increased Patient Risk As a Result of Family History: Does It",
+      "correct": "no",
+      "marc_answer": "no",
+      "marc_correct": true,
+      "baseline_answer": "no",
+      "baseline_correct": true
+    },
+    {
+      "question_id": 15,
+      "question": "Do emergency ultrasound fellowship programs impact emergency medicine residents' ultrasound educatio",
+      "correct": "yes",
+      "marc_answer": "yes",
+      "marc_correct": true,
+      "baseline_answer": "yes",
+      "baseline_correct": true
+    },
+    {
+      "question_id": 16,
+      "question": "Patient-Controlled Therapy of Breathlessness in Palliative Care: A New Therapeutic Concept for Opioi",
+      "correct": "yes",
+      "marc_answer": "yes",
+      "marc_correct": true,
+      "baseline_answer": "yes",
+      "baseline_correct": true
+    },
+    {
+      "question_id": 17,
+      "question": "Is there still a need for living-related liver transplantation in children?",
+      "correct": "yes",
+      "marc_answer": "yes",
+      "marc_correct": true,
+      "baseline_answer": "yes",
+      "baseline_correct": true
+    },
+    {
+      "question_id": 18,
+      "question": "Do patterns of knowledge and attitudes exist among unvaccinated seniors?",
+      "correct": "yes",
+      "marc_answer": "yes",
+      "marc_correct": true,
+      "baseline_answer": "yes",
+      "baseline_correct": true
+    },
+    {
+      "question_id": 19,
+      "question": "Is there a model to teach and practice retroperitoneoscopic nephrectomy?",
+      "correct": "yes",
+      "marc_answer": "yes",
+      "marc_correct": true,
+      "baseline_answer": "yes",
+      "baseline_correct": true
+    },
+    {
+      "question_id": 20,
+      "question": "Cardiovascular risk in a rural adult West African population: is resting heart rate also relevant?",
+      "correct": "yes",
+      "marc_answer": "yes",
+      "marc_correct": true,
+      "baseline_answer": "yes",
+      "baseline_correct": true
+    },
+    {
+      "question_id": 21,
+      "question": "Israeli hospital preparedness for terrorism-related multiple casualty incidents: can the surge capac",
+      "correct": "yes",
+      "marc_answer": "yes",
+      "marc_correct": true,
+      "baseline_answer": "yes",
+      "baseline_correct": true
+    },
+    {
+      "question_id": 22,
+      "question": "Acute respiratory distress syndrome in children with malignancy--can we predict outcome?",
+      "correct": "yes",
+      "marc_answer": "yes",
+      "marc_correct": true,
+      "baseline_answer": "yes",
+      "baseline_correct": true
+    },
+    {
+      "question_id": 23,
+      "question": "Secondhand smoke risk in infants discharged from an NICU: potential for significant health dispariti",
+      "correct": "yes",
+      "marc_answer": "yes",
+      "marc_correct": true,
+      "baseline_answer": "yes",
+      "baseline_correct": true
+    },
+    {
+      "question_id": 24,
+      "question": "Do nomograms designed to predict biochemical recurrence (BCR) do a better job of predicting more cli",
+      "correct": "yes",
+      "marc_answer": "yes",
+      "marc_correct": true,
+      "baseline_answer": "yes",
+      "baseline_correct": true
+    },
+    {
+      "question_id": 25,
+      "question": "Are reports of mechanical dysfunction in chronic oro-facial pain related to somatisation?",
+      "correct": "yes",
+      "marc_answer": "yes",
+      "marc_correct": true,
+      "baseline_answer": "yes",
+      "baseline_correct": true
+    },
+    {
+      "question_id": 26,
+      "question": "Amblyopia: is visual loss permanent?",
+      "correct": "no",
+      "marc_answer": "no",
+      "marc_correct": true,
+      "baseline_answer": "no",
+      "baseline_correct": true
+    },
+    {
+      "question_id": 27,
+      "question": "Implementation of epidural analgesia for labor: is the standard of effective analgesia reachable in ",
+      "correct": "yes",
+      "marc_answer": "no",
+      "marc_correct": false,
+      "baseline_answer": "no",
+      "baseline_correct": false
+    },
+    {
+      "question_id": 28,
+      "question": "Does HER2 immunoreactivity provide prognostic information in locally advanced urothelial carcinoma p",
+      "correct": "maybe",
+      "marc_answer": "maybe",
+      "marc_correct": true,
+      "baseline_answer": "maybe",
+      "baseline_correct": true
+    },
+    {
+      "question_id": 29,
+      "question": "Is halofantrine ototoxic?",
+      "correct": "yes",
+      "marc_answer": "yes",
+      "marc_correct": true,
+      "baseline_answer": "yes",
+      "baseline_correct": true
+    },
+    {
+      "question_id": 30,
+      "question": "Visceral adipose tissue area measurement at a single level: can it represent visceral adipose tissue",
+      "correct": "yes",
+      "marc_answer": "yes",
+      "marc_correct": true,
+      "baseline_answer": "yes",
+      "baseline_correct": true
+    },
+    {
+      "question_id": 31,
+      "question": "Necrotizing fasciitis: an indication for hyperbaric oxygenation therapy?",
+      "correct": "no",
+      "marc_answer": "no",
+      "marc_correct": true,
+      "baseline_answer": "no",
+      "baseline_correct": true
+    },
+    {
+      "question_id": 32,
+      "question": "Is the Hawkins sign able to predict necrosis in fractures of the neck of the astragalus?",
+      "correct": "maybe",
+      "marc_answer": "yes",
+      "marc_correct": false,
+      "baseline_answer": "yes",
+      "baseline_correct": false
+    },
+    {
+      "question_id": 33,
+      "question": "Is a mandatory general surgery rotation necessary in the surgical clerkship?",
+      "correct": "no",
+      "marc_answer": "no",
+      "marc_correct": true,
+      "baseline_answer": "no",
+      "baseline_correct": true
+    },
+    {
+      "question_id": 34,
+      "question": "Is Acupuncture Efficacious for Treating Phonotraumatic Vocal Pathologies?",
+      "correct": "yes",
+      "marc_answer": "yes",
+      "marc_correct": true,
+      "baseline_answer": "yes",
+      "baseline_correct": true
+    },
+    {
+      "question_id": 35,
+      "question": "Is aneurysm repair justified for the patients aged 80 or older after aneurysmal subarachnoid hemorrh",
+      "correct": "yes",
+      "marc_answer": "yes",
+      "marc_correct": true,
+      "baseline_answer": "yes",
+      "baseline_correct": true
+    },
+    {
+      "question_id": 36,
+      "question": "Do general practice characteristics influence uptake of an information technology (IT) innovation in",
+      "correct": "no",
+      "marc_answer": "yes",
+      "marc_correct": false,
+      "baseline_answer": "no",
+      "baseline_correct": true
+    },
+    {
+      "question_id": 37,
+      "question": "Prognosis of well differentiated small hepatocellular carcinoma--is well differentiated hepatocellul",
+      "correct": "no",
+      "marc_answer": "no",
+      "marc_correct": true,
+      "baseline_answer": "no",
+      "baseline_correct": true
+    },
+    {
+      "question_id": 38,
+      "question": "Do follow-up recommendations for abnormal Papanicolaou smears influence patient adherence?",
+      "correct": "no",
+      "marc_answer": "no",
+      "marc_correct": true,
+      "baseline_answer": "no",
+      "baseline_correct": true
+    },
+    {
+      "question_id": 39,
+      "question": "Biomolecular identification of allergenic pollen: a new perspective for aerobiological monitoring?",
+      "correct": "yes",
+      "marc_answer": "yes",
+      "marc_correct": true,
+      "baseline_answer": "yes",
+      "baseline_correct": true
+    },
+    {
+      "question_id": 40,
+      "question": "Does diabetes mellitus influence the efficacy of FDG-PET in the diagnosis of cervical cancer?",
+      "correct": "no",
+      "marc_answer": "no",
+      "marc_correct": true,
+      "baseline_answer": "no",
+      "baseline_correct": true
+    },
+    {
+      "question_id": 41,
+      "question": "Biomechanical and wound healing characteristics of corneas after excimer laser keratorefractive surg",
+      "correct": "yes",
+      "marc_answer": "yes",
+      "marc_correct": true,
+      "baseline_answer": "yes",
+      "baseline_correct": true
+    },
+    {
+      "question_id": 42,
+      "question": "Does radiotherapy of the primary rectal cancer affect prognosis after pelvic exenteration for recurr",
+      "correct": "yes",
+      "marc_answer": "yes",
+      "marc_correct": true,
+      "baseline_answer": "yes",
+      "baseline_correct": true
+    },
+    {
+      "question_id": 43,
+      "question": "Can a practicing surgeon detect early lymphedema reliably?",
+      "correct": "maybe",
+      "marc_answer": "yes",
+      "marc_correct": false,
+      "baseline_answer": "maybe",
+      "baseline_correct": true
+    },
+    {
+      "question_id": 44,
+      "question": "Colorectal cancer with synchronous liver metastases: does global management at the same centre impro",
+      "correct": "no",
+      "marc_answer": "no",
+      "marc_correct": true,
+      "baseline_answer": "no",
+      "baseline_correct": true
+    },
+    {
+      "question_id": 45,
+      "question": "Is motion perception deficit in schizophrenia a consequence of eye-tracking abnormality?",
+      "correct": "yes",
+      "marc_answer": "no",
+      "marc_correct": false,
+      "baseline_answer": "no",
+      "baseline_correct": false
+    },
+    {
+      "question_id": 46,
+      "question": "Transgastric endoscopic splenectomy: is it possible?",
+      "correct": "yes",
+      "marc_answer": "yes",
+      "marc_correct": true,
+      "baseline_answer": "yes",
+      "baseline_correct": true
+    },
+    {
+      "question_id": 47,
+      "question": "It's Fournier's gangrene still dangerous?",
+      "correct": "yes",
+      "marc_answer": "yes",
+      "marc_correct": true,
+      "baseline_answer": "yes",
+      "baseline_correct": true
+    },
+    {
+      "question_id": 48,
+      "question": "Is it appropriate to implant kidneys from elderly donors in young recipients?",
+      "correct": "yes",
+      "marc_answer": "yes",
+      "marc_correct": true,
+      "baseline_answer": "yes",
+      "baseline_correct": true
+    },
+    {
+      "question_id": 49,
+      "question": "Do provider service networks result in lower expenditures compared with HMOs or primary care case ma",
+      "correct": "yes",
+      "marc_answer": "yes",
+      "marc_correct": true,
+      "baseline_answer": "yes",
+      "baseline_correct": true
+    },
+    {
+      "question_id": 50,
+      "question": "Assessment of carotid artery stenosis before coronary artery bypass surgery. Is it always necessary?",
+      "correct": "no",
+      "marc_answer": "no",
+      "marc_correct": true,
+      "baseline_answer": "no",
+      "baseline_correct": true
+    }
+  ]
+}

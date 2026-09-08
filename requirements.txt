@@ -1,0 +1,42 @@
+# MARC-Clinical Requirements
+# Core
+langchain
+langchain-core
+langchain-community
+langchain-google-genai
+langchain-huggingface
+langchain-text-splitters
+
+# Embeddings — BioBERT (upgraded from MiniLM)
+sentence-transformers>=3.0.0
+
+# Vector store
+faiss-cpu
+
+# LLM
+google-generativeai
+
+# Document loading
+pypdf
+
+# Environment
+python-dotenv
+
+# Benchmark datasets
+datasets
+huggingface-hub
+
+# Live web evidence (mirrors base paper's Evidence-Based Scanner Agent)
+ddgs
+
+# PubMed expansion
+requests
+biopython
+
+# Evaluation
+numpy
+scikit-learn
+
+# API
+fastapi
+uvicorn

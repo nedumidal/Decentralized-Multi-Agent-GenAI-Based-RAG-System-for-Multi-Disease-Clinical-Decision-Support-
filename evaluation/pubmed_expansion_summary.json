@@ -1,0 +1,18 @@
+{
+  "cardiology": {
+    "articles_fetched": 75,
+    "chunks_added": 1114
+  },
+  "nephrology": {
+    "articles_fetched": 73,
+    "chunks_added": 1052
+  },
+  "diabetology": {
+    "articles_fetched": 61,
+    "chunks_added": 859
+  },
+  "pharmacology": {
+    "articles_fetched": 45,
+    "chunks_added": 462
+  }
+}
