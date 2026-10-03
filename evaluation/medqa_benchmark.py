@@ -2,6 +2,7 @@
 MedQA Benchmark Evaluation for MARC-Clinical
 """
 import os
+import re
 import sys
 import json
 import time
@@ -9,7 +10,16 @@ import time
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from dotenv import load_dotenv
-load_dotenv(os.path.join(os.path.dirname(__file__), "..", ".env"))
+# override=True: the .env file wins over any key already set in the Windows environment.
+load_dotenv(os.path.join(os.path.dirname(__file__), "..", ".env"), override=True, encoding="utf-8-sig")  # utf-8-sig handles a hidden BOM at the top of .env
+
+def _redact(s):
+    """Hide API keys that Google/Groq echo back inside error messages."""
+    s = re.sub(r"api_key:[^\s'\"\\]+", "api_key:<redacted>", s)
+    s = re.sub(r"AIza[0-9A-Za-z_\-]{20,}", "<redacted>", s)
+    s = re.sub(r"AQ\.[0-9A-Za-z_\-]{20,}", "<redacted>", s)
+    s = re.sub(r"gsk_[0-9A-Za-z]{20,}", "<redacted>", s)
+    return s
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 os.chdir(ROOT)
@@ -103,24 +113,27 @@ def format_question(q):
             "Select best answer. Start with answer letter (A/B/C/D) only.")
 
 def extract_answer(text):
+    """Robust letter extraction. Returns 'X' when no clear answer letter is found.
+    Never guesses from stray letters inside words (the old fallback scanned the first
+    80 characters and could silently score 'A' from words like 'ANSWER')."""
     if not text:
         return "X"
-    t = text.strip().upper()
-    for letter in ["A","B","C","D"]:
-        if (t.startswith(letter+" ") or t.startswith(letter+")")
-                or t.startswith(letter+".") or t.startswith(letter+":")):
-            return letter
-    for marker in ["ANSWER: ","ANSWER IS ","BEST ANSWER: ","CORRECT ANSWER: "]:
-        if marker in t:
-            idx = t.index(marker)+len(marker)
-            if idx < len(t) and t[idx] in "ABCD":
-                return t[idx]
-    for letter in ["A","B","C","D"]:
-        if f"({letter})" in t or f"OPTION {letter}" in t:
-            return letter
-    for ch in t[:80]:
-        if ch in "ABCD":
-            return ch
+    t = text.strip()
+    if not t or t.lower().startswith("unavailable"):  # agent's failure marker only, not the word inside a real analysis
+        return "X"
+    # 1. Answer on the first non-empty line: "B", "B)", "**B**", "Answer: B"
+    first = next((ln for ln in t.splitlines() if ln.strip()), "")
+    m = re.match(r"^[\s\*\#\(\[]*(?:(?i:(?:best |correct |final )?answer)\s*(?i:is)?\s*[:\-]?\s*)?[\*\(\[]*([ABCD])(?=\s*(?:[\)\.\:\*\]]|-|$))", first)
+    if m:
+        return m.group(1)
+    # 2. Explicit marker anywhere: "Answer: B", "the answer is (B)"
+    m = re.search(r"(?i:(?:best |correct |final )?answer\s*(?:is)?)\s*[:\-]?\s*[\*\(\[]*\s*([ABCD])(?![A-Za-z])", t)
+    if m:
+        return m.group(1)
+    # 3. A single distinct parenthesised letter, e.g. "(D)"
+    letters = set(re.findall(r"\(([ABCD])\)", t))
+    if len(letters) == 1:
+        return letters.pop()
     return "X"
 
 def get_correct_answer(q):
@@ -131,7 +144,7 @@ def get_correct_answer(q):
                 return val
             if val in ["0","1","2","3"]:
                 return ["A","B","C","D"][int(val)]
-    return "A"
+    raise ValueError(f"No valid answer key found in question record: {list(q.keys())}")
 
 def analyze_with_retry(agent, case, max_retries=3):
     last_error = None
@@ -141,7 +154,7 @@ def analyze_with_retry(agent, case, max_retries=3):
         except Exception as e:
             last_error = e
             es = str(e)
-            print(f"  [{agent.name}] error: {es[:300]}")
+            print(f"  [{agent.name}] error: {_redact(es)[:300]}")
             if "PERMISSION_DENIED" in es or "403" in es:
                 print(f"  [{agent.name}] account/billing-level block — retrying won't help. "
                       f"Check your Google Cloud project's billing status. Skipping retries.")
@@ -151,7 +164,7 @@ def analyze_with_retry(agent, case, max_retries=3):
                 break
             print(f"  Retry {attempt+1} in {wait}s...")
             time.sleep(wait)
-    print(f"  [{agent.name}] giving up. Last error: {str(last_error)[:300]}")
+    print(f"  [{agent.name}] giving up. Last error: {_redact(str(last_error))[:300]}")
     return {"agent":agent.name,"specialty":agent.specialty,
             "analysis":"Unavailable.","retrieved_docs":[],"confidence":0.0}
 

@@ -53,11 +53,14 @@ def fetch_pubmed_evidence(query: str, max_results: int = 3) -> str:
 
 
 class PharmacologyAgent:
-    def __init__(self, pdf_path: str):
+    def __init__(self, pdf_path: str, llm_provider: str = "gemini", groq_model: str = "openai/gpt-oss-120b", groq_kwargs: dict = None):
         self.name = "Pharmacology Agent"
         self.specialty = "pharmacology"
         self.retriever = None
         self.chain = None
+        self.llm_provider = llm_provider
+        self.groq_model = groq_model
+        self.groq_kwargs = groq_kwargs or {}
         self._build_knowledge_base(pdf_path)
 
     def _build_knowledge_base(self, pdf_path: str):
@@ -84,15 +87,22 @@ class PharmacologyAgent:
         self.retriever = vectorstore.as_retriever(search_kwargs={"k": 6})
         print(f"[{self.name}] Knowledge base ready.")
 
-        # Switched to gemini-3.6-flash — gemini-3.7-flash is still rollout-capacity-
-        # constrained (503 "high demand" + hard ~20-23 req/day ceiling observed in
-        # Cloud Console dashboard despite active billing). 3.6-flash has been GA since
-        # July 21, 2026 and has had time to reach standard Tier 1 throughput.
-        llm = ChatGoogleGenerativeAI(
-            model="gemini-3.6-flash",
-            google_api_key=os.getenv("GOOGLE_API_KEY"),
-            timeout=90
-        )
+        # Switched to gemini-3.6-flash by default, or Groq Llama-3.3-70B when
+        # llm_provider="groq" (free, 1000 req/day, no card needed).
+        if self.llm_provider == "groq":
+            from langchain_groq import ChatGroq
+            llm = ChatGroq(
+                model=self.groq_model,
+                api_key=os.getenv("GROQ_API_KEY"),
+                timeout=90,
+                **self.groq_kwargs
+            )
+        else:
+            llm = ChatGoogleGenerativeAI(
+                model="gemini-3.6-flash",
+                google_api_key=os.getenv("GOOGLE_API_KEY"),
+                timeout=90
+            )
 
         prompt = PromptTemplate.from_template("""You are a specialist Pharmacologist AI agent.
 Analyze this clinical case using WHO Essential Medicines guidelines context provided.

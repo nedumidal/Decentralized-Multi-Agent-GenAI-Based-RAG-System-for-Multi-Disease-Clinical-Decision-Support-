@@ -68,11 +68,14 @@ def fetch_pubmed_evidence(query: str, max_results: int = 3) -> str:
 
 
 class CardiologyAgent:
-    def __init__(self, pdf_path: str):
+    def __init__(self, pdf_path: str, llm_provider: str = "gemini", groq_model: str = "openai/gpt-oss-120b", groq_kwargs: dict = None):
         self.name = "Cardiology Agent"
         self.specialty = "cardiology"
         self.retriever = None
         self.chain = None
+        self.llm_provider = llm_provider
+        self.groq_model = groq_model
+        self.groq_kwargs = groq_kwargs or {}
         self._build_knowledge_base(pdf_path)
 
     def _build_knowledge_base(self, pdf_path: str):
@@ -100,13 +103,23 @@ class CardiologyAgent:
         self.retriever = vectorstore.as_retriever(search_kwargs={"k": 6})
         print(f"[{self.name}] Knowledge base ready.")
 
-        # gemini-3.6-flash — established model (since Jul 21), stable Tier-1 capacity
-        # for paying accounts, unlike gemini-3.7-flash which is still rollout-throttled
-        self.llm = ChatGoogleGenerativeAI(
-            model="gemini-3.6-flash",
-            google_api_key=os.getenv("GOOGLE_API_KEY"),
-            timeout=90
-        )
+        # gemini-3.6-flash by default (established, stable Tier-1 capacity), or
+        # Groq-hosted Llama-3.3-70B when llm_provider="groq" (free, 1000 req/day,
+        # no card needed) — used for the MedBullets run to avoid further Gemini spend.
+        if self.llm_provider == "groq":
+            from langchain_groq import ChatGroq
+            self.llm = ChatGroq(
+                model=self.groq_model,
+                api_key=os.getenv("GROQ_API_KEY"),
+                timeout=90,
+                **self.groq_kwargs
+            )
+        else:
+            self.llm = ChatGoogleGenerativeAI(
+                model="gemini-3.6-flash",
+                google_api_key=os.getenv("GOOGLE_API_KEY"),
+                timeout=90
+            )
 
         self.prompt = PromptTemplate.from_template("""You are a specialist Cardiologist AI agent.
 Analyze this clinical case using the AHA/ACC Heart Failure Guidelines (RAG context)

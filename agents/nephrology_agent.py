@@ -51,11 +51,14 @@ def fetch_pubmed_evidence(query: str, max_results: int = 3) -> str:
 
 
 class NephrologyAgent:
-    def __init__(self, pdf_path: str):
+    def __init__(self, pdf_path: str, llm_provider: str = "gemini", groq_model: str = "openai/gpt-oss-120b", groq_kwargs: dict = None):
         self.name = "Nephrology Agent"
         self.specialty = "nephrology"
         self.retriever = None
         self.chain = None
+        self.llm_provider = llm_provider
+        self.groq_model = groq_model
+        self.groq_kwargs = groq_kwargs or {}
         self._build_knowledge_base(pdf_path)
 
     def _build_knowledge_base(self, pdf_path: str):
@@ -82,11 +85,20 @@ class NephrologyAgent:
         self.retriever = vectorstore.as_retriever(search_kwargs={"k": 6})
         print(f"[{self.name}] Knowledge base ready.")
 
-        self.llm = ChatGoogleGenerativeAI(
-            model="gemini-3.6-flash",
-            google_api_key=os.getenv("GOOGLE_API_KEY"),
-            timeout=90
-        )
+        if self.llm_provider == "groq":
+            from langchain_groq import ChatGroq
+            self.llm = ChatGroq(
+                model=self.groq_model,
+                api_key=os.getenv("GROQ_API_KEY"),
+                timeout=90,
+                **self.groq_kwargs
+            )
+        else:
+            self.llm = ChatGoogleGenerativeAI(
+                model="gemini-3.6-flash",
+                google_api_key=os.getenv("GOOGLE_API_KEY"),
+                timeout=90
+            )
 
         self.prompt = PromptTemplate.from_template("""You are a specialist Nephrologist AI agent.
 Analyze this clinical case using KDIGO CKD Guidelines 2024 (RAG context)

@@ -48,18 +48,20 @@ KB = {
 VALID_LETTERS = ["A","B","C","D","E"]
 
 def _extract_options(q):
-    """Try several common schema patterns since the exact field names for this
-    dataset weren't verified ahead of time - check the printed sample fields
-    when you run this and adjust here if none of these patterns match."""
+    """Confirmed real schema for JesseLiu/medbulltes5op (verified from a live run's
+    printed sample fields): choicesA, choicesB, choicesC, choicesD, choicesE.
+    Falls back to other common patterns in case of dataset version drift."""
     if isinstance(q.get("options"), dict):
         return q["options"]
     if isinstance(q.get("choices"), dict):
         return q["choices"]
     opts = {}
     for letter, key_variants in zip(VALID_LETTERS,
-            [["opa","option_a","choice_a","A"], ["opb","option_b","choice_b","B"],
-             ["opc","option_c","choice_c","C"], ["opd","option_d","choice_d","D"],
-             ["ope","option_e","choice_e","E"]]):
+            [["choicesA","opa","option_a","choice_a","A"],
+             ["choicesB","opb","option_b","choice_b","B"],
+             ["choicesC","opc","option_c","choice_c","C"],
+             ["choicesD","opd","option_d","choice_d","D"],
+             ["choicesE","ope","option_e","choice_e","E"]]):
         for key in key_variants:
             if key in q and q[key]:
                 opts[letter] = q[key]
@@ -77,6 +79,8 @@ def extract_answer(text):
     if not text:
         return "X"
     t = text.strip().upper()
+    if "UNAVAILABLE" in t:
+        return "X"
     for letter in VALID_LETTERS:
         if (t.startswith(letter+" ") or t.startswith(letter+")")
                 or t.startswith(letter+".") or t.startswith(letter+":")):
@@ -130,7 +134,8 @@ _fusion_llm = None
 def get_fusion_llm():
     global _fusion_llm
     if _fusion_llm is None:
-        _fusion_llm = ChatGoogleGenerativeAI(model="gemini-3.6-flash", google_api_key=os.getenv("GOOGLE_API_KEY"), timeout=90)
+        from langchain_groq import ChatGroq
+        _fusion_llm = ChatGroq(model="openai/gpt-oss-120b", api_key=os.getenv("GROQ_API_KEY"), timeout=90)
     return _fusion_llm
 
 FUSION_PROMPT = PromptTemplate.from_template("""You are the Clinical Data Fusion arbiter for a multi-agent medical panel.
@@ -200,6 +205,7 @@ def get_marc_answer(question_text, agents, sral, iakb, scdp, dcwo):
         sral.store_interpretation(agent.name, result["retrieved_docs"], result["analysis"])
         iakb.publish(agent.name, ftype, result["analysis"][:200].replace("\n"," "), result["confidence"], notify)
         results[specialty] = result
+        time.sleep(2)  # pacing — stays comfortably under Groq's 30 req/min free-tier limit
     conflicts = scdp.detect_and_resolve(results)
     dcwo_report = dcwo.run_consensus(results, conflicts)
 
@@ -282,12 +288,12 @@ def run_benchmark(num_questions=50):
             print(f"❌ as an alternate source, or check huggingface-cli login if it's gated.")
             return None
 
-    print("\nInitializing agents...")
+    print("\nInitializing agents (backbone: Groq Llama-3.3-70B-Versatile, free tier)...")
     agents = {
-        "cardiology":  CardiologyAgent(KB["cardiology"]),
-        "diabetology": DiabetologyAgent(KB["diabetology"]),
-        "nephrology":  NephrologyAgent(KB["nephrology"]),
-        "pharmacology":PharmacologyAgent(KB["pharmacology"]),
+        "cardiology":  CardiologyAgent(KB["cardiology"], llm_provider="groq"),
+        "diabetology": DiabetologyAgent(KB["diabetology"], llm_provider="groq"),
+        "nephrology":  NephrologyAgent(KB["nephrology"], llm_provider="groq"),
+        "pharmacology":PharmacologyAgent(KB["pharmacology"], llm_provider="groq"),
     }
     print("All agents ready.\n")
 
